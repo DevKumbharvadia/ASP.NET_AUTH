@@ -1,0 +1,37 @@
+CREATE TABLE Users (
+    UserId INT PRIMARY KEY IDENTITY(1,1), -- Auto-incremented unique identifier
+    Username NVARCHAR(50) NOT NULL,       -- Username for login
+    PasswordHash NVARCHAR(255) NOT NULL,  -- Hashed password for security
+    Email NVARCHAR(100) NOT NULL,         -- Email for the user
+    CreatedAt DATETIME NOT NULL DEFAULT GETDATE(), -- Timestamp of account creation
+    UpdatedAt DATETIME NOT NULL DEFAULT GETDATE(), -- Timestamp of account last update
+    CONSTRAINT UQ_Username UNIQUE (Username), -- Ensure unique username
+    CONSTRAINT UQ_Email UNIQUE (Email)        -- Ensure unique email
+);
+
+CREATE TABLE Roles (
+    RoleId INT PRIMARY KEY IDENTITY(1,1), -- Auto-incremented unique identifier
+    RoleName NVARCHAR(50) NOT NULL,       -- Name of the role (e.g., Admin, User)
+    CONSTRAINT UQ_RoleName UNIQUE (RoleName) -- Ensure unique role names
+);
+
+CREATE TABLE UserRoles (
+    UserId INT NOT NULL,   -- Foreign key to Users table
+    RoleId INT NOT NULL,   -- Foreign key to Roles table
+    PRIMARY KEY (UserId, RoleId), -- Composite primary key
+    CONSTRAINT FK_UserRoles_Users FOREIGN KEY (UserId) REFERENCES Users(UserId) ON DELETE CASCADE,
+    CONSTRAINT FK_UserRoles_Roles FOREIGN KEY (RoleId) REFERENCES Roles(RoleId) ON DELETE CASCADE
+);
+
+
+CREATE TABLE TodoItems (
+    Id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(), -- Unique identifier for each todo item
+    Title NVARCHAR(255) NOT NULL,                   -- Title of the todo item
+    Description NVARCHAR(MAX),                      -- Detailed description of the todo item (optional)
+    IsCompleted BIT NOT NULL DEFAULT 0,             -- Indicates whether the task is completed
+    DueDate DATETIME,                               -- The due date for the task (optional)
+    CreatedAt DATETIME NOT NULL DEFAULT GETDATE(),  -- Timestamp of when the task was created
+    UpdatedAt DATETIME NOT NULL DEFAULT GETDATE(),  -- Timestamp of when the task was last updated
+    UserId INT,                                     -- Foreign Key to link to a user
+    CONSTRAINT FK_TodoItems_Users FOREIGN KEY (UserId) REFERENCES Users(UserId) ON DELETE SET NULL -- If a user is deleted, their todo items remain
+);

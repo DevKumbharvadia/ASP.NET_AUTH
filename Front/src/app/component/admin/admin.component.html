@@ -1,0 +1,27 @@
+<div class="container mx-auto p-4">
+  <h2 class="text-xl font-bold mb-4">User Audit Table</h2>
+  <table class="min-w-full table-auto border-collapse border border-gray-200">
+    <thead>
+      <tr class="bg-gray-100">
+        <th class="px-4 py-2 border border-gray-300 text-left">UserAuditId</th>
+        <th class="px-4 py-2 border border-gray-300 text-left">UserId</th>
+        <th class="px-4 py-2 border border-gray-300 text-left">Username</th>
+        <th class="px-4 py-2 border border-gray-300 text-left">LoginTime</th>
+        <th class="px-4 py-2 border border-gray-300 text-left">LogoutTime</th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (audit of audits; track $index) {
+      <tr class="hover:bg-gray-50">
+        <td class="px-4 py-2 border border-gray-300">
+          {{ audit.userAuditId }}
+        </td>
+        <td class="px-4 py-2 border border-gray-300">{{ audit.userId }}</td>
+        <td class="px-4 py-2 border border-gray-300">{{ audit.username }}</td>
+        <td class="px-4 py-2 border border-gray-300">{{ audit.loginTime }}</td>
+        <td class="px-4 py-2 border border-gray-300">{{ audit.logoutTime }}</td>
+      </tr>
+      }
+    </tbody>
+  </table>
+</div>
