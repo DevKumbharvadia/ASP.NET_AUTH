@@ -10,6 +10,9 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using System.Security.Cryptography;
+using Microsoft.AspNetCore.Authorization;
+using TodoAPI.Models;
+
 
 namespace TodoAPI.Controllers
 {
@@ -28,6 +31,7 @@ namespace TodoAPI.Controllers
 
         // GET: api/audits
         [HttpGet("GetAllAudits")]
+        [Authorize]
         public IActionResult GetUserAudits()
         {
             try
@@ -340,7 +344,9 @@ namespace TodoAPI.Controllers
             {
                 new Claim(JwtRegisteredClaimNames.Sub, user.Username),
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-                new Claim(ClaimTypes.Name, user.Username)
+                new Claim(ClaimTypes.Name, user.Username),
+                new Claim(ClaimTypes.Role, "Admin"),
+                new Claim(ClaimTypes.Role, "User")
             };
 
             // Retrieve and validate configuration values

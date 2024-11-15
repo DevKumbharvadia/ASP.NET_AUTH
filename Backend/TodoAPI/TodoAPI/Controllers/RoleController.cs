@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -22,6 +23,7 @@ namespace TodoAPI.Controllers
 
         // GET: api/Role
         [HttpGet("GetAllRoles")]
+        [Authorize(Roles = "User")]
         public async Task<ActionResult<IEnumerable<Role>>> GetRoles()
         {
             var roles = await _context.Roles.ToListAsync();
@@ -29,6 +31,7 @@ namespace TodoAPI.Controllers
         }
 
         [HttpGet("GetUserRoles")]
+        [Authorize(Roles = "Admin")]
         public ActionResult<ApiResponse<List<string>>> GetUserRoles(Guid userId)
         {
             try
