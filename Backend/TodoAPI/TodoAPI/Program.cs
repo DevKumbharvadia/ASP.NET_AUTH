@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using Sieve.Services;
 using Swashbuckle.AspNetCore.Filters;
 using System.Text;
 using TodoAPI.Data;
@@ -30,7 +31,7 @@ builder.Services.AddCors(option =>
 {
     option.AddDefaultPolicy(policy =>  policy.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader());
 });
-
+builder.Services.AddSingleton<SieveProcessor>();
 builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)

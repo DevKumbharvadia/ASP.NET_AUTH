@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Sieve.Attributes;
+using System;
 
 namespace TodoAPI.Models.Domain
 {
@@ -6,6 +7,7 @@ namespace TodoAPI.Models.Domain
     {
         public Guid Id { get; set; } // Primary key
 
+        [Sieve(CanFilter = true, CanSort = true)]
         public string Title { get; set; } = string.Empty; // Ensure non-nullable with default value
 
         public string Description { get; set; } = string.Empty; // Ensure non-nullable with default value

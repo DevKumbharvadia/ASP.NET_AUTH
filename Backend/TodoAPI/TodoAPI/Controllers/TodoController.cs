@@ -7,6 +7,8 @@ using System.Threading.Tasks;
 using System.Linq;
 using TodoAPI.Models.DTO;
 using TodoAPI.Models.DTOs;
+using Sieve.Services;
+using Sieve.Models;
 
 namespace TodoAPI.Controllers
 {
@@ -15,10 +17,12 @@ namespace TodoAPI.Controllers
     public class TodoController : ControllerBase
     {
         private readonly ApplicationDbContext _context;
+        private readonly SieveProcessor _sieveProcessor;
 
-        public TodoController(ApplicationDbContext context)
+        public TodoController(ApplicationDbContext context, SieveProcessor sieveProcessor)
         {
             _context = context;
+            _sieveProcessor = sieveProcessor;
         }
         // Create a new TodoItem
         [HttpPost]
@@ -57,6 +61,20 @@ namespace TodoAPI.Controllers
             var todoItems = await _context.TodoItems.ToListAsync();
             return Ok(todoItems);
         }
+
+        // Read Sort
+        [HttpGet("Sorted")]
+        public async Task<IActionResult> GetTodoSorted([FromQuery]SieveModel model)
+        {
+            var todoItemsQuery = _context.TodoItems.AsQueryable();
+
+            todoItemsQuery = _sieveProcessor.Apply(model, todoItemsQuery);
+
+            var todoItems = await todoItemsQuery.ToListAsync();
+
+            return Ok(todoItems);
+        }
+
 
         [HttpGet("Paged")]
         public async Task<IActionResult> GetTodoPaged(int page = 1, int pageSize = 10)
