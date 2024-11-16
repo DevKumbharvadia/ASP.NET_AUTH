@@ -1,7 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using TodoAPI.Models;
-using TodoAPI.Models.Entity;
 using System;
+using TodoAPI.Models.Domain;
 
 namespace TodoAPI.Data
 {

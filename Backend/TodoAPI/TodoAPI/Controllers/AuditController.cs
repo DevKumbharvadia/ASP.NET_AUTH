@@ -1,18 +1,9 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using TodoAPI.Data;
-using TodoAPI.Models.Entity;
-using System.Linq;
-using System;
-using TodoAPI.Models;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens;
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
-using System.Text;
-using System.Security.Cryptography;
 using Microsoft.AspNetCore.Authorization;
-using TodoAPI.Models;
-
+using TodoAPI.Models.Domain;
+using TodoAPI.Models.DTO;
+using TodoAPI.Data;
 
 namespace TodoAPI.Controllers
 {
@@ -36,20 +27,19 @@ namespace TodoAPI.Controllers
         {
             try
             {
-                // Include the User data in the result
                 var audits = _context.UserAudits
-            .Include(a => a.User)
-            .Select(a => new AuditWithUserDto
-            {
-                UserAuditId = a.UserAuditId,
-                UserId = a.UserId,
-                Username = a.User.Username, // Make sure to include this property
-                LoginTime = a.LoginTime,
-                LogoutTime = a.LogoutTime
-            })
-            .ToList();
+                    .Include(a => a.User)
+                    .Select(a => new AuditWithUserDTO
+                    {
+                        UserAuditId = a.UserAuditId,
+                        UserId = a.UserId,
+                        Username = a.User!.Username,
+                        LoginTime = a.LoginTime,
+                        LogoutTime = a.LogoutTime
+                    })
+                    .ToList();
 
-                if (audits == null)
+                if (!audits.Any())
                 {
                     return NotFound("No audits found.");
                 }
@@ -58,7 +48,6 @@ namespace TodoAPI.Controllers
             }
             catch (Exception ex)
             {
-                // Log the exception (consider using a logging framework)
                 Console.WriteLine($"Error occurred: {ex.Message}");
                 return StatusCode(500, "Internal server error.");
             }
@@ -66,7 +55,7 @@ namespace TodoAPI.Controllers
 
         // GET: api/audits/{userId}
         [HttpGet("GetUserAuditsByUserID")]
-        public async Task<ActionResult<IEnumerable<UserAudit>>> GetUserAuditsByUserId(Guid userId)
+        public async Task<IActionResult> GetUserAuditsByUserId(Guid userId)
         {
             try
             {
@@ -74,7 +63,7 @@ namespace TodoAPI.Controllers
                     .Where(a => a.UserId == userId)
                     .ToListAsync();
 
-                if (audits == null || !audits.Any())
+                if (!audits.Any())
                 {
                     return NotFound($"No audits found for user with ID: {userId}");
                 }
@@ -83,305 +72,88 @@ namespace TodoAPI.Controllers
             }
             catch (Exception ex)
             {
-                // Log the exception
                 Console.WriteLine($"Error occurred: {ex.Message}");
                 return StatusCode(500, "Internal server error.");
             }
         }
 
-
-        [HttpGet("GetAllUsers")]
-        public async Task<ActionResult<IEnumerable<User>>> GetUsers()
+        // POST: api/audits
+        [HttpPost("AddAudit")]
+        public async Task<IActionResult> AddAudit([FromBody] UserAudit newAudit)
         {
-            var users = await _context.Users.ToListAsync();
-            return Ok(users);
-        }
+            if (newAudit == null)
+            {
+                return BadRequest("Audit data is null.");
+            }
 
-        // POST: api/audit/logout/{userId}
-        [HttpPost("Logout")]
-        public IActionResult Logout(Guid userId)
-        {
             try
             {
-                // Find the last audit entry for the user (the most recent login without a logout time)
-                var lastAudit = _context.UserAudits
-                    .Where(ua => ua.UserId == userId && ua.LogoutTime == null)
-                    .OrderByDescending(ua => ua.LoginTime)
-                    .FirstOrDefault();
+                await _context.UserAudits.AddAsync(newAudit);
+                await _context.SaveChangesAsync();
+                return CreatedAtAction(nameof(GetUserAuditsByUserId), new { userId = newAudit.UserId }, newAudit);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error occurred: {ex.Message}");
+                return StatusCode(500, "Internal server error.");
+            }
+        }
 
-                if (lastAudit == null)
+        // PUT: api/audits/{id}
+        [HttpPut("UpdateAudit/{id}")]
+        public async Task<IActionResult> UpdateAudit(Guid id, [FromBody] UserAudit updatedAudit)
+        {
+            if (updatedAudit == null || id != updatedAudit.UserAuditId)
+            {
+                return BadRequest("Invalid audit data.");
+            }
+
+            try
+            {
+                var existingAudit = await _context.UserAudits.FindAsync(id);
+                if (existingAudit == null)
                 {
-                    return BadRequest(new ApiResponse<UserAudit>
-                    {
-                        Message = "No active login session found for this user",
-                        Success = false,
-                    });
+                    return NotFound($"Audit with ID: {id} not found.");
                 }
 
-                // Set the logout time to the current time
-                lastAudit.LogoutTime = DateTime.UtcNow;
-                _context.UserAudits.Update(lastAudit); // Update the audit record in the database
-                _context.SaveChanges();
+                // Update fields
+                existingAudit.LoginTime = updatedAudit.LoginTime;
+                existingAudit.LogoutTime = updatedAudit.LogoutTime;
 
-                return Ok(new ApiResponse<UserAudit>
-                {
-                    Message = "Logout recorded successfully",
-                    Success = true,
-                    Data = lastAudit
-                });
+                _context.UserAudits.Update(existingAudit);
+                await _context.SaveChangesAsync();
+
+                return NoContent();
             }
             catch (Exception ex)
             {
-                // Log the exception (consider using a logging framework)
-                return StatusCode(500, new ApiResponse<UserAudit>
-                {
-                    Message = $"An error occurred while processing your request: {ex.Message}",
-                    Success = false,
-                });
+                Console.WriteLine($"Error occurred: {ex.Message}");
+                return StatusCode(500, "Internal server error.");
             }
         }
 
-
-        // POST: api/user/register
-        [HttpPost("RegisterUser")]
-        public ActionResult<ApiResponse<User>> Register([FromBody] UserRegisterModel model)
+        // DELETE: api/audits/{id}
+        [HttpDelete("DeleteAudit/{id}")]
+        public async Task<IActionResult> DeleteAudit(Guid id)
         {
-
-            if (_context.Users.Any(u => u.Username == model.Username))
-            {
-                return BadRequest(new ApiResponse<User>
-                {
-                    Message = "Username already exists",
-                    Success = false,
-                });
-            }
-
-            var user = new User
-            {
-                UserId = Guid.NewGuid(),
-                Username = model.Username,
-                PasswordHash = BCrypt.Net.BCrypt.HashPassword(model.Password),
-                Email = model.Email,
-                CreatedAt = DateTime.UtcNow,
-                UpdatedAt = DateTime.UtcNow
-            };
-
-            _context.Users.Add(user);
-
             try
             {
-                _context.SaveChanges();
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new ApiResponse<User>
+                var audit = await _context.UserAudits.FindAsync(id);
+                if (audit == null)
                 {
-                    Message = $"Error registering user:{ex.Message}",
-                    Success = false,
-                });
-            }
-
-            return CreatedAtAction(nameof(Register), new { id = user.UserId }, new ApiResponse<User>
-            {
-                Message = "User registered successfully",
-                Success = true,
-                Data = user
-            });
-        }
-
-        // POST: api/user/login
-        [HttpPost("LoginUser")]
-        public ActionResult<ApiResponse<object>> Login([FromBody] UserLoginModel model)
-        {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(new ApiResponse<object>
-                {
-                    Message = "Invalid input data",
-                    Success = false,
-                });
-            }
-
-            var user = _context.Users.Include(u => u.RefreshTokens)
-                .SingleOrDefault(u => u.Username == model.Username);
-
-            if (user == null || !BCrypt.Net.BCrypt.Verify(model.Password, user.PasswordHash))
-            {
-                return Unauthorized(new ApiResponse<object>
-                {
-                    Message = "Invalid credentials",
-                    Success = false,
-                });
-            }
-
-            Logout(user.UserId);
-
-            var jwtToken = GenerateJwtToken(user);
-            var refreshToken = GenerateRefreshToken();
-
-            user.RefreshTokens.Add(new RefreshToken
-            {
-                Token = refreshToken,
-                Expires = DateTime.UtcNow.AddDays(7),
-                Created = DateTime.UtcNow,
-                UserId = user.UserId
-            });
-
-            _context.UserAudits.Add(new UserAudit { LoginTime = DateTime.UtcNow, UserId = user.UserId });
-
-            try
-            {
-                _context.SaveChanges();
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new ApiResponse<object>
-                {
-                    Message = $"Error logging in: {ex.Message}",
-                    Success = false,
-                });
-            }
-
-            return Ok(new ApiResponse<object>
-            {
-                Message = "Login successful",
-                Success = true,
-                Data = new
-                {
-                    JwtToken = jwtToken,
-                    RefreshToken = refreshToken,
-                    UserId = user.UserId
+                    return NotFound($"Audit with ID: {id} not found.");
                 }
-            });
-        }
 
-        // POST: api/user/refresh-token
-        [HttpPost("refresh-token")]
-        public ActionResult<ApiResponse<string>> RefreshToken([FromBody] string refreshToken)
-        {
-            if (string.IsNullOrWhiteSpace(refreshToken))
-            {
-                return BadRequest(new ApiResponse<string>
-                {
-                    Success = false,
-                    Message = "Refresh token is required"
-                });
-            }
+                _context.UserAudits.Remove(audit);
+                await _context.SaveChangesAsync();
 
-            var user = _context.Users.Include(u => u.RefreshTokens)
-                .SingleOrDefault(u => u.RefreshTokens.Any(t => t.Token == refreshToken));
-
-            if (user == null)
-            {
-                return Unauthorized(new ApiResponse<string>
-                {
-                    Success = false,
-                    Message = "Invalid refresh token"
-                });
-            }
-
-            var storedToken = user.RefreshTokens.Single(t => t.Token == refreshToken);
-
-            if (!storedToken.IsActive)
-            {
-                return Unauthorized(new ApiResponse<string>
-                {
-                    Success = false,
-                    Message = "Token expired or revoked"
-                });
-            }
-
-            // Generate new JWT and refresh token
-            var newJwtToken = GenerateJwtToken(user);
-            var newRefreshToken = GenerateRefreshToken();
-
-            // Revoke the old refresh token
-            storedToken.Revoked = DateTime.UtcNow;
-
-            user.RefreshTokens.Add(new RefreshToken
-            {
-                Token = newRefreshToken,
-                Expires = DateTime.UtcNow.AddDays(7),
-                Created = DateTime.UtcNow,
-                UserId = user.UserId
-            });
-
-            try
-            {
-                _context.SaveChanges();
+                return NoContent();
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new ApiResponse<string>
-                {
-                    Success = false,
-                    Message = $"Error refreshing token: {ex.Message}"
-                });
+                Console.WriteLine($"Error occurred: {ex.Message}");
+                return StatusCode(500, "Internal server error.");
             }
-
-            return Ok(new ApiResponse<string>
-            {
-                Success = true,
-                Message = "Token refreshed successfully",
-                Data = newJwtToken
-            });
         }
-
-        // Generate JWT token
-        private string GenerateJwtToken(User user)
-        {
-            // Retrieve the JWT key from configuration
-            var jwtKey = _config["Jwt:Key"];
-            if (string.IsNullOrEmpty(jwtKey))
-            {
-                throw new InvalidOperationException("JWT key not configured.");
-            }
-
-            var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey));
-            var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
-
-            var claims = new[]
-            {
-                new Claim(JwtRegisteredClaimNames.Sub, user.Username),
-                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-                new Claim(ClaimTypes.Name, user.Username),
-                new Claim(ClaimTypes.Role, "Admin"),
-                new Claim(ClaimTypes.Role, "User")
-            };
-
-            // Retrieve and validate configuration values
-            string issuer = _config["Jwt:Issuer"] ?? throw new InvalidOperationException("JWT issuer not configured.");
-            string audience = _config["Jwt:Audience"] ?? throw new InvalidOperationException("JWT audience not configured.");
-
-            double expiresInMinutes = 60; // Default to 60 minutes if not configured or parsing fails
-            if (!string.IsNullOrEmpty(_config["Jwt:ExpiresInMinutes"]) &&
-                double.TryParse(_config["Jwt:ExpiresInMinutes"], out var parsedExpiresInMinutes))
-            {
-                expiresInMinutes = parsedExpiresInMinutes;
-            }
-
-            // Create the token
-            var token = new JwtSecurityToken(
-                issuer: issuer,
-                audience: audience,
-                claims: claims,
-                expires: DateTime.UtcNow.AddMinutes(expiresInMinutes),
-                signingCredentials: credentials
-            );
-
-            return new JwtSecurityTokenHandler().WriteToken(token);
-        }
-
-        // Generate refresh token
-        private string GenerateRefreshToken()
-        {
-            var randomBytes = new byte[64];
-            using (var rng = RandomNumberGenerator.Create())
-            {
-                rng.GetBytes(randomBytes);
-            }
-            return Convert.ToBase64String(randomBytes);
-        }
-
     }
 }

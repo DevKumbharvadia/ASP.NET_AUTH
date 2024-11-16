@@ -6,7 +6,8 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using TodoAPI.Data;
 using TodoAPI.Models;
-using TodoAPI.Models.Entity;
+using TodoAPI.Models.Domain;
+using TodoAPI.Models.DTO;
 
 namespace TodoAPI.Controllers
 {
@@ -39,7 +40,7 @@ namespace TodoAPI.Controllers
                 // Select role names for the user, joining UserRole and Role entities
                 var roles = _context.UserRoles
                     .Where(ur => ur.UserId == userId)
-                    .Select(ur => ur.Role.RoleName) // Select RoleName instead of RoleId
+                    .Select(ur => ur.Role!.RoleName) // Select RoleName instead of RoleId
                     .ToList();
 
                 if (!roles.Any())
@@ -71,13 +72,24 @@ namespace TodoAPI.Controllers
 
         // POST: api/Role
         [HttpPost("AddRole")]
-        public async Task<ActionResult<ApiResponse<Role>>> AddRole(AddRole role)
+        public async Task<ActionResult<ApiResponse<Role>>> AddRole(RoleDTO role)
         {
+            if (role == null)
+            {
+                throw new ArgumentNullException(nameof(role), "The role object cannot be null.");
+            }
+
+            if (string.IsNullOrEmpty(role.RoleName))
+            {
+                throw new ArgumentException("Role name is required.", nameof(role.RoleName));
+            }
+
             var newRole = new Role
             {
                 RoleId = Guid.NewGuid(),
                 RoleName = role.RoleName,
             };
+
 
             _context.Roles.Add(newRole);
             await _context.SaveChangesAsync();
@@ -107,11 +119,22 @@ namespace TodoAPI.Controllers
         }
 
         [HttpPut("UpdateRole")]
-        public async Task<IActionResult> UpdateRole(Guid Id, UpdateRoleDto role)
+        public async Task<IActionResult> UpdateRole(Guid Id, RoleDTO role)
         {
             if (Id == Guid.Empty)
             {
                 return BadRequest("Invalid role ID.");
+            }
+
+            // Check if the role object is null or if the RoleName is empty or invalid
+            if (role == null)
+            {
+                return BadRequest("Role data is required.");
+            }
+
+            if (string.IsNullOrEmpty(role.RoleName))
+            {
+                return BadRequest("Role name cannot be empty.");
             }
 
             var existingRole = await _context.Roles.FindAsync(Id);
@@ -120,12 +143,23 @@ namespace TodoAPI.Controllers
                 return NotFound("Role not found.");
             }
 
+            // Update the role name
             existingRole.RoleName = role.RoleName;
 
-            await _context.SaveChangesAsync();
+            try
+            {
+                // Save the changes asynchronously
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateException ex)
+            {
+                // Log the exception (consider using a logger here)
+                return StatusCode(500, $"An error occurred while updating the role: { ex }");
+            }
 
-            return Ok("Role updated successfully.");
+            return Ok(new { Message = "Role updated successfully.", Role = existingRole });
         }
+
 
     }
 }

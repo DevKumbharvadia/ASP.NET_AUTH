@@ -12,7 +12,7 @@ using TodoAPI.Data;
 namespace TodoAPI.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20241112074700_fm")]
+    [Migration("20241116054726_fm")]
     partial class fm
     {
         /// <inheritdoc />
@@ -25,7 +25,7 @@ namespace TodoAPI.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
-            modelBuilder.Entity("TodoAPI.Models.Entity.RefreshToken", b =>
+            modelBuilder.Entity("TodoAPI.Models.Domain.RefreshToken", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -54,29 +54,7 @@ namespace TodoAPI.Migrations
                     b.ToTable("RefreshTokens");
                 });
 
-            modelBuilder.Entity("TodoAPI.Models.Entity.UserAudit", b =>
-                {
-                    b.Property<Guid>("UserAuditId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTime>("LoginTime")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime?>("LogoutTime")
-                        .HasColumnType("datetime2");
-
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.HasKey("UserAuditId");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("UserAudits");
-                });
-
-            modelBuilder.Entity("TodoAPI.Models.Role", b =>
+            modelBuilder.Entity("TodoAPI.Models.Domain.Role", b =>
                 {
                     b.Property<Guid>("RoleId")
                         .ValueGeneratedOnAdd()
@@ -93,17 +71,17 @@ namespace TodoAPI.Migrations
                     b.HasData(
                         new
                         {
-                            RoleId = new Guid("f96a963b-0b8f-4083-92f7-f1996a881cfb"),
+                            RoleId = new Guid("406761eb-609d-48a6-ae1c-08a493378bb1"),
                             RoleName = "Admin"
                         },
                         new
                         {
-                            RoleId = new Guid("25680e27-a078-4a56-bd64-dc3b530bc4f0"),
+                            RoleId = new Guid("4eb396e1-47a1-4442-b54f-0c6b18447114"),
                             RoleName = "User"
                         });
                 });
 
-            modelBuilder.Entity("TodoAPI.Models.TodoItem", b =>
+            modelBuilder.Entity("TodoAPI.Models.Domain.TodoItem", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -139,7 +117,7 @@ namespace TodoAPI.Migrations
                     b.ToTable("TodoItems");
                 });
 
-            modelBuilder.Entity("TodoAPI.Models.User", b =>
+            modelBuilder.Entity("TodoAPI.Models.Domain.User", b =>
                 {
                     b.Property<Guid>("UserId")
                         .ValueGeneratedOnAdd()
@@ -170,25 +148,47 @@ namespace TodoAPI.Migrations
                     b.HasData(
                         new
                         {
-                            UserId = new Guid("2fa0b5dd-b8aa-4928-8219-8416f12138ba"),
-                            CreatedAt = new DateTime(2024, 11, 12, 7, 46, 59, 689, DateTimeKind.Utc).AddTicks(583),
+                            UserId = new Guid("f2527472-1335-4785-b2e7-a80ad0057ceb"),
+                            CreatedAt = new DateTime(2024, 11, 16, 5, 47, 25, 617, DateTimeKind.Utc).AddTicks(7977),
                             Email = "admin@example.com",
-                            PasswordHash = "$2a$11$r7B0czcVuEQ29pdWaeOkkO/6iBihtnqndnkNV/pRZ2vvbcet0FXTa",
-                            UpdatedAt = new DateTime(2024, 11, 12, 7, 46, 59, 689, DateTimeKind.Utc).AddTicks(587),
+                            PasswordHash = "$2a$11$qH7chvIUMS52OTllob7s8e7txOSeJyiR2O.GSorrcfmiRZqoHFkzS",
+                            UpdatedAt = new DateTime(2024, 11, 16, 5, 47, 25, 617, DateTimeKind.Utc).AddTicks(7984),
                             Username = "admin"
                         },
                         new
                         {
-                            UserId = new Guid("a638c95a-0508-483b-b686-f7b8f21a5a17"),
-                            CreatedAt = new DateTime(2024, 11, 12, 7, 46, 59, 796, DateTimeKind.Utc).AddTicks(1440),
+                            UserId = new Guid("418ba6fd-0483-432a-9ef2-63ee373c2419"),
+                            CreatedAt = new DateTime(2024, 11, 16, 5, 47, 25, 723, DateTimeKind.Utc).AddTicks(6957),
                             Email = "user@example.com",
-                            PasswordHash = "$2a$11$RTANhkE7TsrsWoh4IkKdZOe6gPWb0jfTLxG5vixGbHzSDf27okWC6",
-                            UpdatedAt = new DateTime(2024, 11, 12, 7, 46, 59, 796, DateTimeKind.Utc).AddTicks(1443),
+                            PasswordHash = "$2a$11$wbGT/ihaJgR1GAvXffPiX.vA5GnXtiiF8zJIC49ekeiT6Gr95a3rO",
+                            UpdatedAt = new DateTime(2024, 11, 16, 5, 47, 25, 723, DateTimeKind.Utc).AddTicks(6961),
                             Username = "user"
                         });
                 });
 
-            modelBuilder.Entity("TodoAPI.Models.UserRole", b =>
+            modelBuilder.Entity("TodoAPI.Models.Domain.UserAudit", b =>
+                {
+                    b.Property<Guid>("UserAuditId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("LoginTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("LogoutTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("UserAuditId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("UserAudits");
+                });
+
+            modelBuilder.Entity("TodoAPI.Models.Domain.UserRole", b =>
                 {
                     b.Property<Guid>("UserId")
                         .HasColumnType("uniqueidentifier");
@@ -205,19 +205,19 @@ namespace TodoAPI.Migrations
                     b.HasData(
                         new
                         {
-                            UserId = new Guid("2fa0b5dd-b8aa-4928-8219-8416f12138ba"),
-                            RoleId = new Guid("f96a963b-0b8f-4083-92f7-f1996a881cfb")
+                            UserId = new Guid("f2527472-1335-4785-b2e7-a80ad0057ceb"),
+                            RoleId = new Guid("406761eb-609d-48a6-ae1c-08a493378bb1")
                         },
                         new
                         {
-                            UserId = new Guid("a638c95a-0508-483b-b686-f7b8f21a5a17"),
-                            RoleId = new Guid("25680e27-a078-4a56-bd64-dc3b530bc4f0")
+                            UserId = new Guid("418ba6fd-0483-432a-9ef2-63ee373c2419"),
+                            RoleId = new Guid("4eb396e1-47a1-4442-b54f-0c6b18447114")
                         });
                 });
 
-            modelBuilder.Entity("TodoAPI.Models.Entity.RefreshToken", b =>
+            modelBuilder.Entity("TodoAPI.Models.Domain.RefreshToken", b =>
                 {
-                    b.HasOne("TodoAPI.Models.User", "User")
+                    b.HasOne("TodoAPI.Models.Domain.User", "User")
                         .WithMany("RefreshTokens")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -226,9 +226,19 @@ namespace TodoAPI.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("TodoAPI.Models.Entity.UserAudit", b =>
+            modelBuilder.Entity("TodoAPI.Models.Domain.TodoItem", b =>
                 {
-                    b.HasOne("TodoAPI.Models.User", "User")
+                    b.HasOne("TodoAPI.Models.Domain.User", "User")
+                        .WithMany("TodoItems")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("TodoAPI.Models.Domain.UserAudit", b =>
+                {
+                    b.HasOne("TodoAPI.Models.Domain.User", "User")
                         .WithMany("UserAudits")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -237,25 +247,15 @@ namespace TodoAPI.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("TodoAPI.Models.TodoItem", b =>
+            modelBuilder.Entity("TodoAPI.Models.Domain.UserRole", b =>
                 {
-                    b.HasOne("TodoAPI.Models.User", "User")
-                        .WithMany("TodoItems")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.SetNull);
-
-                    b.Navigation("User");
-                });
-
-            modelBuilder.Entity("TodoAPI.Models.UserRole", b =>
-                {
-                    b.HasOne("TodoAPI.Models.Role", "Role")
+                    b.HasOne("TodoAPI.Models.Domain.Role", "Role")
                         .WithMany("UserRoles")
                         .HasForeignKey("RoleId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("TodoAPI.Models.User", "User")
+                    b.HasOne("TodoAPI.Models.Domain.User", "User")
                         .WithMany("UserRoles")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -266,12 +266,12 @@ namespace TodoAPI.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("TodoAPI.Models.Role", b =>
+            modelBuilder.Entity("TodoAPI.Models.Domain.Role", b =>
                 {
                     b.Navigation("UserRoles");
                 });
 
-            modelBuilder.Entity("TodoAPI.Models.User", b =>
+            modelBuilder.Entity("TodoAPI.Models.Domain.User", b =>
                 {
                     b.Navigation("RefreshTokens");
 

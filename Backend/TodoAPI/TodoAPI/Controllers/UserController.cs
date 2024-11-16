@@ -6,6 +6,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using TodoAPI.Data;
 using TodoAPI.Models;
+using TodoAPI.Models.Domain;
 
 namespace TodoAPI.Controllers
 {
@@ -64,6 +65,12 @@ namespace TodoAPI.Controllers
             return Ok(new { Message = "User roles updated successfully." });
         }
 
+        [HttpGet("GetAllUsers")]
+        public async Task<ActionResult<IEnumerable<User>>> GetUsers()
+        {
+            var users = await _context.Users.ToListAsync();
+            return Ok(users);
+        }
 
     }
 }

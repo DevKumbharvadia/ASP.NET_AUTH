@@ -136,8 +136,8 @@ namespace TodoAPI.Migrations
                 columns: new[] { "RoleId", "RoleName" },
                 values: new object[,]
                 {
-                    { new Guid("25680e27-a078-4a56-bd64-dc3b530bc4f0"), "User" },
-                    { new Guid("f96a963b-0b8f-4083-92f7-f1996a881cfb"), "Admin" }
+                    { new Guid("406761eb-609d-48a6-ae1c-08a493378bb1"), "Admin" },
+                    { new Guid("4eb396e1-47a1-4442-b54f-0c6b18447114"), "User" }
                 });
 
             migrationBuilder.InsertData(
@@ -145,8 +145,8 @@ namespace TodoAPI.Migrations
                 columns: new[] { "UserId", "CreatedAt", "Email", "PasswordHash", "UpdatedAt", "Username" },
                 values: new object[,]
                 {
-                    { new Guid("2fa0b5dd-b8aa-4928-8219-8416f12138ba"), new DateTime(2024, 11, 12, 7, 46, 59, 689, DateTimeKind.Utc).AddTicks(583), "admin@example.com", "$2a$11$r7B0czcVuEQ29pdWaeOkkO/6iBihtnqndnkNV/pRZ2vvbcet0FXTa", new DateTime(2024, 11, 12, 7, 46, 59, 689, DateTimeKind.Utc).AddTicks(587), "admin" },
-                    { new Guid("a638c95a-0508-483b-b686-f7b8f21a5a17"), new DateTime(2024, 11, 12, 7, 46, 59, 796, DateTimeKind.Utc).AddTicks(1440), "user@example.com", "$2a$11$RTANhkE7TsrsWoh4IkKdZOe6gPWb0jfTLxG5vixGbHzSDf27okWC6", new DateTime(2024, 11, 12, 7, 46, 59, 796, DateTimeKind.Utc).AddTicks(1443), "user" }
+                    { new Guid("418ba6fd-0483-432a-9ef2-63ee373c2419"), new DateTime(2024, 11, 16, 5, 47, 25, 723, DateTimeKind.Utc).AddTicks(6957), "user@example.com", "$2a$11$wbGT/ihaJgR1GAvXffPiX.vA5GnXtiiF8zJIC49ekeiT6Gr95a3rO", new DateTime(2024, 11, 16, 5, 47, 25, 723, DateTimeKind.Utc).AddTicks(6961), "user" },
+                    { new Guid("f2527472-1335-4785-b2e7-a80ad0057ceb"), new DateTime(2024, 11, 16, 5, 47, 25, 617, DateTimeKind.Utc).AddTicks(7977), "admin@example.com", "$2a$11$qH7chvIUMS52OTllob7s8e7txOSeJyiR2O.GSorrcfmiRZqoHFkzS", new DateTime(2024, 11, 16, 5, 47, 25, 617, DateTimeKind.Utc).AddTicks(7984), "admin" }
                 });
 
             migrationBuilder.InsertData(
@@ -154,8 +154,8 @@ namespace TodoAPI.Migrations
                 columns: new[] { "RoleId", "UserId" },
                 values: new object[,]
                 {
-                    { new Guid("f96a963b-0b8f-4083-92f7-f1996a881cfb"), new Guid("2fa0b5dd-b8aa-4928-8219-8416f12138ba") },
-                    { new Guid("25680e27-a078-4a56-bd64-dc3b530bc4f0"), new Guid("a638c95a-0508-483b-b686-f7b8f21a5a17") }
+                    { new Guid("4eb396e1-47a1-4442-b54f-0c6b18447114"), new Guid("418ba6fd-0483-432a-9ef2-63ee373c2419") },
+                    { new Guid("406761eb-609d-48a6-ae1c-08a493378bb1"), new Guid("f2527472-1335-4785-b2e7-a80ad0057ceb") }
                 });
 
             migrationBuilder.CreateIndex(

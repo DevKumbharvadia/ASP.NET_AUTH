@@ -1,4 +1,4 @@
-﻿namespace TodoAPI.Models.Entity
+﻿namespace TodoAPI.Models
 {
     public class UserLogoutModel
     {
