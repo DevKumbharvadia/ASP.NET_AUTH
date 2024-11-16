@@ -22,7 +22,6 @@ namespace TodoAPI.Controllers
 
         // GET: api/audits
         [HttpGet("GetAllAudits")]
-        [Authorize]
         public IActionResult GetUserAudits()
         {
             try
@@ -79,15 +78,21 @@ namespace TodoAPI.Controllers
 
         // POST: api/audits
         [HttpPost("AddAudit")]
-        public async Task<IActionResult> AddAudit([FromBody] UserAudit newAudit)
+        public async Task<IActionResult> AddAudit([FromBody] UserAuditDTO newAuditDto)
         {
-            if (newAudit == null)
+            if (newAuditDto == null)
             {
                 return BadRequest("Audit data is null.");
             }
 
             try
             {
+                var newAudit = new UserAudit
+                {
+                    UserId = newAuditDto.UserId,
+                    LoginTime = DateTime.Now,
+                };
+
                 await _context.UserAudits.AddAsync(newAudit);
                 await _context.SaveChangesAsync();
                 return CreatedAtAction(nameof(GetUserAuditsByUserId), new { userId = newAudit.UserId }, newAudit);
@@ -98,6 +103,7 @@ namespace TodoAPI.Controllers
                 return StatusCode(500, "Internal server error.");
             }
         }
+
 
         // PUT: api/audits/{id}
         [HttpPut("UpdateAudit/{id}")]
